@@ -5,9 +5,9 @@ from model import m, train_data, val_data, itos, config, load_checkpoint, save_c
 
 ## Training
 eval_iters = 200
-eval_interval = 200
-sample_interval = 50
-sample_length = 500
+eval_interval = 1000
+sample_interval = 250
+sample_length = config.block_size * 4 # Let's make sure it can actually extrapolate
 iters_per_epoch = len(train_data)
 epochs = 10
 max_iters = iters_per_epoch * epochs
@@ -17,16 +17,16 @@ max_iters = iters_per_epoch * epochs
 def estimate_loss():
     out = {}
     m.eval()
-    for split in [train_data, val_data]:
+    for (name, split) in [('train', train_data), ('val', val_data)]:
 
         losses = torch.zeros(eval_iters)
         for k, (xb, yb) in enumerate(split):
             if k >= eval_iters:
                 break
 
-            logits, loss = m(xb, yb)
+            _, loss = m(xb, yb)
             losses[k] = loss.item()
-        out[split] = losses.mean()
+        out[name] = losses.mean()
     m.train()
     return out
 
@@ -61,6 +61,7 @@ for iter in progress:
 
     if iter > 0 and iter % sample_interval == 0:
         count = 0
+        print(f"Generating {sample_length} tokens:")
         for token in m.generate():
             count += 1
             print(itos[token], end='', flush=True)
@@ -70,7 +71,7 @@ for iter in progress:
     _, batch = next(enumerate(train_data))
     xb, yb = batch
     logits, loss = m(xb, yb)
-    lossf = "{:.2f}".format(loss.mean())
+    lossf = "{:.4f}".format(loss.mean())
     progress.set_description(f"training loss: {lossf}")
     optimizer.zero_grad(set_to_none=True)
     loss.backward()
