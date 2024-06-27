@@ -5,8 +5,8 @@ from model import m, train_data, val_data, itos, config, load_checkpoint, save_c
 
 ## Training
 eval_iters = 200
-eval_interval = 1000
-sample_interval = 250
+eval_interval = 2000
+sample_interval = 500
 sample_length = config.block_size * 4 # Let's make sure it can actually extrapolate
 iters_per_epoch = len(train_data)
 epochs = 10

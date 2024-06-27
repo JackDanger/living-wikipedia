@@ -284,4 +284,4 @@ def load_checkpoint():
 
 def save_checkpoint(checkpoint):
     print(f"saving checkpoint to {ckpt_path}")
-    torch.save(checkpoint, os.path.join(save_path, 'ckpt.pt'))
+    torch.save(checkpoint, ckpt_path)
