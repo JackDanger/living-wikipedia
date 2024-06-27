@@ -173,18 +173,26 @@ class WikipediaDataset(Dataset):
     def __len__(self):
         return self.num_blocks
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx, forced_seek=None):
+        # Sometimes we have to be able to read from a specific location
+        if forced_seek is None:
+            seek = idx * self.block_size
+        else:
+            seek = forced_seek
+
         try:
             with open(self.file_path, 'r') as f:
-                f.seek(idx * self.block_size)
+                f.seek(seek)
                 # Read (at least) an extra byte because we'll shift this data by one
                 # to manufacture a target set
                 text = f.read(self.block_size + 1)
                 self.bytes_read += self.block_size
                 encoded = [self.stoi[ch] for ch in text if ch in self.stoi]
                 return torch.tensor(encoded, dtype=torch.long, device='cuda')
-        except Exception as e:
-            import IPython; IPython.embed()
+        except UnicodeDecodeError as e:
+            # We started reading from the middle of a multi-byte character
+            # back up and try again
+            return self.__getitem__(idx, forced_seek=seek-1)
 
 
 
