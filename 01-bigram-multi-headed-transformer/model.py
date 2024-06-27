@@ -89,6 +89,9 @@ class BigramLanguageModel(nn.Module):
         super().__init__()
         self.c = c
         self.token_embdedding_table = nn.Embedding(c.vocab_size, c.n_embd)
+        # I read a paper somewhere that said you can avoid the warmup period on
+        # a deep model by dividing initial values by number of heads
+        self.token_embdedding_table.weight.data /= c.n_head
         self.positional_embedding_table = nn.Embedding(c.block_size, c.n_embd)
         self.blocks = nn.Sequential(*[Block(c) for _ in range(c.n_layer)])
         self.ln_f = nn.LayerNorm(c.n_embd) # final layer norm
