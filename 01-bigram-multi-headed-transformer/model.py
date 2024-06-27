@@ -159,6 +159,7 @@ config.n_embd = 32 * config.n_head
 
 save_path = os.path.dirname(os.path.realpath(__file__))
 data_source = os.path.join(save_path, "../../iij/Infinite-Jest.txt")
+data_source_name = os.path.basename(data_source)
 
 
 class WikipediaDataset(Dataset):
@@ -213,7 +214,7 @@ def collate_fn(batch):
 
 
 # Calculate and cache the vocab just once
-vocab_file = os.path.join(save_path, 'vocab.txt')
+vocab_file = os.path.join(save_path, f"{data_source_name}.vocab.txt")
 if not os.path.exists(vocab_file):
     chars = set()
     with open(data_source) as f:
@@ -253,8 +254,11 @@ m = BigramLanguageModel(config)
 optimizer = torch.optim.AdamW(m.parameters(), lr=config.learning_rate)
 
 
+# Checkpointing with datasource as part of the filename because I test on small
+# datasets and then forget to clear this when switching to the larger
+ckpt_path = os.path.join(save_path, f"{data_source_name}.ckpt.pt")
+
 def load_checkpoint():
-    ckpt_path = os.path.join(save_path, 'ckpt.pt')
     if not os.path.exists(ckpt_path):
         print("No checkpoint found, starting from scratch")
         return {}
@@ -267,6 +271,5 @@ def load_checkpoint():
 
 
 def save_checkpoint(checkpoint):
-    ckpt_path = os.path.join(save_path, 'ckpt.pt')
     print(f"saving checkpoint to {ckpt_path}")
     torch.save(checkpoint, os.path.join(save_path, 'ckpt.pt'))
