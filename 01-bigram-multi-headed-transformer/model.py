@@ -94,6 +94,17 @@ class BigramLanguageModel(nn.Module):
         self.ln_f = nn.LayerNorm(c.n_embd) # final layer norm
         self.lm_head = nn.Linear(c.n_embd, c.vocab_size)
 
+        # Apply weight initialization
+        self.apply(self._init_weights)
+
+    def _init_weights(self, module):
+        if isinstance(module, nn.Embedding):
+            nn.init.normal_(module.weight)
+        elif isinstance(module, nn.Linear):
+            nn.init.normal_(module.weight)
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0.0)
+
     def forward(self, idx, targets=None):
         B, T = idx.shape
 
