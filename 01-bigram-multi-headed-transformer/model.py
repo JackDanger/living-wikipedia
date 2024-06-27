@@ -151,8 +151,8 @@ class BigramLanguageModel(nn.Module):
 torch.manual_seed(1337)
 
 config = Config(
-    block_size=256,
-    batch_size=24,
+    block_size=128,
+    batch_size=64,
     dropout=0.2,
     n_head=16,
     n_layer=12,
