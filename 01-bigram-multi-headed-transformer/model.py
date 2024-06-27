@@ -17,7 +17,7 @@ class Config:
 
 class Head(nn.Module):
     """ One head of self-attention """
-    def __init__(self, c) -> None:
+    def __init__(self, c):
         super().__init__()
         self.c = c
         self.key   = nn.Linear(c.n_embd, c.n_embd // c.n_head, bias=False)
