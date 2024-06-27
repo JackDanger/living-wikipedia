@@ -121,7 +121,7 @@ class BigramLanguageModel(nn.Module):
         else:
             B, T, C = logits.shape
             logits = logits.view(B*T, C)
-            targets = targets.reshape(B*T) # TODO: find out why .view doesn't work here
+            targets = targets.view(B*T)
 
             loss = F.cross_entropy(logits, targets)
         return logits, loss
@@ -214,9 +214,13 @@ def collate_fn(batch):
     block_size) into two tensors, the target shifted one step right of the input
     """
     flattened = torch.tensor([item for sublist in batch for item in sublist])
-    batch = flattened.reshape(config.batch_size, config.block_size +1)
-    data = batch[:, :-1] # All except the last element
-    target = batch[:, 1:] # All except the first element
+    # trim any amount that is more than a multiple of block_size
+    batch = batch[:len(batch) - len(batch) % config.block_size]
+
+    # Make this an actual batch of sequences again
+    batch = flattened.reshape(config.batch_size, -1)
+    data = batch[:, :-1].contiguous() # All except the last element
+    target = batch[:, 1:].contiguous() # All except the first element
 
     return data, target
 
