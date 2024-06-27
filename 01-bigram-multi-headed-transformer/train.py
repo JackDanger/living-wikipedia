@@ -21,7 +21,7 @@ def estimate_loss():
 
         losses = torch.zeros(eval_iters)
         for k, (xb, yb) in enumerate(split):
-            if k > eval_iters:
+            if k >= eval_iters:
                 break
 
             logits, loss = m(xb, yb)
