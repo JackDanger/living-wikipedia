@@ -218,7 +218,7 @@ def collate_fn(batch):
     batch = batch[:len(batch) - len(batch) % config.block_size]
 
     # Make this an actual batch of sequences again
-    batch = flattened.reshape(config.batch_size, flattened // config.batch_size)
+    batch = flattened.reshape((config.batch_size, len(flattened) // config.batch_size))
     data = batch[:, :-1].contiguous() # All except the last element
     target = batch[:, 1:].contiguous() # All except the first element
 
