@@ -3,9 +3,12 @@ import io
 from collections import defaultdict
 import torch
 import torch.nn as nn
+import tiktoken
 from torch.nn import functional as F
 from torch.utils.data import Dataset, DataLoader, random_split
 
+
+ENV_SOURCE_DATA = os.environ['SOURCE_DATA']
 
 torch.set_default_device('cuda')
 
@@ -135,7 +138,6 @@ class BigramLanguageModel(nn.Module):
             # append the new token to the sequence
             idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
 
-
 ### Hyperparameters
 torch.manual_seed(1337)
 
@@ -155,7 +157,7 @@ config.n_embd = 32 * config.n_head
 ### Dataset
 
 save_path = os.path.dirname(os.path.realpath(__file__))
-data_source = os.path.join(save_path, "../../iij/Infinite-Jest.txt")
+data_source = os.path.join(save_path, ENV_SOURCE_DATA)
 data_source_name = os.path.basename(data_source)
 
 
