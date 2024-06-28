@@ -94,17 +94,6 @@ class BigramLanguageModel(nn.Module):
         self.ln_f = nn.LayerNorm(c.n_embd) # final layer norm
         self.lm_head = nn.Linear(c.n_embd, c.vocab_size)
 
-        # Apply weight initialization
-        self.apply(self._init_weights)
-
-    def _init_weights(self, module):
-        if isinstance(module, nn.Embedding):
-            nn.init.normal_(module.weight)
-        elif isinstance(module, nn.Linear):
-            nn.init.normal_(module.weight)
-            if module.bias is not None:
-                nn.init.constant_(module.bias, 0.0)
-
     def forward(self, idx, targets=None):
         B, T = idx.shape
 
@@ -170,7 +159,7 @@ data_source = os.path.join(save_path, "../../iij/Infinite-Jest.txt")
 data_source_name = os.path.basename(data_source)
 
 
-class WikipediaDataset(Dataset):
+class FileSeekDataset(Dataset):
     def __init__(self, file_path, stoi, block_size):
         self.file_path = file_path
         self.stoi = stoi
@@ -249,7 +238,7 @@ decode = lambda l: ''.join([itos[i] for i in l])
 train_ratio = 0.8
 val_ratio = 0.2
 
-dataset = WikipediaDataset(data_source, stoi, config.block_size)
+dataset = FileSeekDataset(data_source, stoi, config.block_size)
 
 # Calculate lengths for training and validation sets
 total_length = len(dataset)
