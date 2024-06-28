@@ -1,21 +1,38 @@
 import os
-import io
-from collections import defaultdict
+import random
 import torch
 import torch.nn as nn
 import tiktoken
 from torch.nn import functional as F
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader, Subset
+
 
 
 ENV_SOURCE_DATA = os.environ['SOURCE_DATA']
 
 torch.set_default_device('cuda')
 
+### Hyperparameters
+torch.manual_seed(1337)
+random.seed(1337)
+
+
 class Config:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+config = Config(
+    block_size=94,
+    batch_size=64,
+    dropout=0.2,
+    n_head=16,
+    n_layer=12,
+    n_embd=128,
+    vocab_size=None,
+    learning_rate=1e-4,
+)
+config.n_embd = 32 * config.n_head
 
 
 class Head(nn.Module):
@@ -138,21 +155,6 @@ class BigramLanguageModel(nn.Module):
             # append the new token to the sequence
             idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
 
-### Hyperparameters
-torch.manual_seed(1337)
-
-config = Config(
-    block_size=128,
-    batch_size=64,
-    dropout=0.2,
-    n_head=16,
-    n_layer=12,
-    n_embd=128,
-    vocab_size=None,
-    learning_rate=1e-4,
-)
-config.n_embd = 32 * config.n_head
-
 
 ### Dataset
 
@@ -245,12 +247,15 @@ dataset = FileSeekDataset(data_source, stoi, config.block_size)
 # Calculate lengths for training and validation sets
 total_length = len(dataset)
 train_length = int(train_ratio * total_length)
-val_length = total_length - train_length
 
-generator = torch.Generator(device='cuda').manual_seed(1337)
-train_dataset, val_dataset = random_split(dataset, [train_length, val_length], generator=generator)
+n_blocks = total_length // config.block_size
+indices = list(range(n_blocks))
+random.shuffle(indices)
+train_dataset = Subset(dataset, indices[:train_length])
+val_dataset = Subset(dataset, indices[train_length:])
+
 train_data = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=False, collate_fn=collate_fn)
-val_data   = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=False, collate_fn=collate_fn)
+val_data   = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False, collate_fn=collate_fn)
 
 m = BigramLanguageModel(config)
 

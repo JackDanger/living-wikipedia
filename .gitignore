@@ -1,2 +1,5 @@
 .vscode
 __pycache__
+*.ckpt.pt
+*.vocab.txt
+typescript

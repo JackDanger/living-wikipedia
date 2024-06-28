@@ -10,4 +10,13 @@ Model 01 is a Multi-Headed Transformer model using character tokens
 
 ## Performance
 
+* Required [massive simplification of character codes in Wikipedia source](https://github.com/jackdanger/wikipedia-parser) to allow 97-char vocab
 
+25%
+2 hours in we've processed 11500/45767 batches
+training loss: 0.0135
+
+42%
+Haven't changed the training loss at all. I can only hope that somehow,
+somewhere, floating points numbers are descending a gradient
+training loss: 0.0135
